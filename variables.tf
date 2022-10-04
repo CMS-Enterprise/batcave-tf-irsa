@@ -96,3 +96,10 @@ variable "velero_s3_bucket_arns" {
   type        = list(string)
   default     = ["*"]
 }
+
+#Flux
+variable "attach_flux_policy" {
+  description = "Determines whether to attach the Flux IAM policy to the role"
+  type        = bool
+  default     = false
+}

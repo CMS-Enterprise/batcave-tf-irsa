@@ -66,3 +66,52 @@ resource "aws_iam_role_policy_attachment" "velero" {
   role       = aws_iam_role.this[0].name
   policy_arn = aws_iam_policy.velero[0].arn
 }
+
+################################################################################
+# Flux Policy
+################################################################################
+data "aws_kms_alias" "sops" {
+  name = "alias/batcave-landing-sops"
+}
+
+data "aws_iam_policy_document" "flux" {
+  count = var.create_role && var.attach_flux_policy ? 1 : 0
+
+  statement {
+    sid = "kmslist"
+    actions = [
+      "kms:List*",
+      "kms:Describe*"
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    sid = "K8sNodes"
+    actions = [
+      "kms:Decrypt",
+    ]
+    resources = [
+      data.aws_kms_alias.sops.arn,
+      data.aws_kms_alias.sops.target_key_arn,
+    ]
+  }
+}
+
+resource "aws_iam_policy" "flux" {
+  count = var.create_role && var.attach_flux_policy ? 1 : 0
+
+  name_prefix = "${var.policy_name_prefix}Flux_Policy-"
+  path        = var.role_path
+  description = "Provides Flux permissions to view and decrypt KMS keys"
+  policy      = data.aws_iam_policy_document.flux[0].json
+
+  tags = var.tags
+}
+
+resource "aws_iam_role_policy_attachment" "flux" {
+  count = var.create_role && var.attach_flux_policy ? 1 : 0
+
+  role       = aws_iam_role.this[0].name
+  policy_arn = aws_iam_policy.flux[0].arn
+}
