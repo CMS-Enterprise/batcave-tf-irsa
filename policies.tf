@@ -115,3 +115,48 @@ resource "aws_iam_role_policy_attachment" "flux" {
   role       = aws_iam_role.this[0].name
   policy_arn = aws_iam_policy.flux[0].arn
 }
+
+################################################################################
+# Gitlab Runner Policy
+################################################################################
+data "aws_iam_policy_document" "gitlab_runner" {
+  count = var.create_role && var.attach_gitlab_runner_policy ? 1 : 0
+
+  statement {
+    sid = "S3ReadWrite"
+    actions = [
+      "s3:GetObject",
+      "s3:DeleteObject",
+      "s3:PutObject",
+      "s3:AbortMultipartUpload",
+      "s3:ListMultipartUploadParts",
+    ]
+    resources = [for bucket in var.gitlab_runner_s3_bucket_arns : "${bucket}/*"]
+  }
+
+  statement {
+    sid = "S3List"
+    actions = [
+      "s3:ListBucket",
+    ]
+    resources = var.gitlab_runner_s3_bucket_arns
+  }
+}
+
+resource "aws_iam_policy" "gitlab_runner" {
+  count = var.create_role && var.attach_gitlab_runner_policy ? 1 : 0
+
+  name_prefix = "${var.policy_name_prefix}Gitlab_Runner-"
+  path        = var.role_path
+  description = "Permissions for Gitlab Runner to store its cache in S3"
+  policy      = data.aws_iam_policy_document.gitlab_runner[0].json
+
+  tags = var.tags
+}
+
+resource "aws_iam_role_policy_attachment" "gitlab_runner" {
+  count = var.create_role && var.attach_gitlab_runner_policy ? 1 : 0
+
+  role       = aws_iam_role.this[0].name
+  policy_arn = aws_iam_policy.gitlab_runner[0].arn
+}
