@@ -97,9 +97,22 @@ variable "velero_s3_bucket_arns" {
   default     = ["*"]
 }
 
-#Flux
+# Flux
 variable "attach_flux_policy" {
   description = "Determines whether to attach the Flux IAM policy to the role"
   type        = bool
   default     = false
+}
+
+# Gitlab Runner
+variable "attach_gitlab_runner_policy" {
+  description = "Determines whether to attach the Gitlab Runner IAM policy to the role"
+  type        = bool
+  default     = false
+}
+
+variable "gitlab_runner_s3_bucket_arns" {
+  description = "List of S3 Bucket ARNs that Gitlab Runner needs for caching"
+  type        = list(string)
+  default     = ["*"]
 }
