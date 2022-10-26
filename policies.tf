@@ -125,11 +125,11 @@ data "aws_iam_policy_document" "gitlab_runner" {
   statement {
     sid = "S3ReadWrite"
     actions = [
-      "s3:GetObject",
-      "s3:DeleteObject",
-      "s3:PutObject",
       "s3:AbortMultipartUpload",
+      "s3:DeleteObject",
+      "s3:GetObject",
       "s3:ListMultipartUploadParts",
+      "s3:PutObject",
     ]
     resources = [for bucket in var.gitlab_runner_s3_bucket_arns : "${bucket}/*"]
   }
