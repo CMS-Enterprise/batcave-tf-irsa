@@ -116,3 +116,9 @@ variable "gitlab_runner_s3_bucket_arns" {
   type        = list(string)
   default     = ["*"]
 }
+# ArgoCD
+variable "attach_argocd_policy" {
+  description = "Determines whether to attach the ArgoCD IAM policy to the role"
+  type        = bool
+  default     = false
+}

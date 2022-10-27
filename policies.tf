@@ -160,3 +160,47 @@ resource "aws_iam_role_policy_attachment" "gitlab_runner" {
   role       = aws_iam_role.this[0].name
   policy_arn = aws_iam_policy.gitlab_runner[0].arn
 }
+
+################################################################################
+# ArgoCD Policy
+################################################################################
+data "aws_iam_policy_document" "argocd" {
+  count = var.create_role && var.attach_argocd_policy ? 1 : 0
+
+  statement {
+    sid = "kmslist"
+    actions = [
+      "kms:List*",
+      "kms:Describe*"
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    sid = "K8sNodes"
+    actions = [
+      "kms:Decrypt",
+    ]
+    resources = [
+      data.aws_kms_alias.sops.arn,
+      data.aws_kms_alias.sops.target_key_arn,
+    ]
+  }
+}
+
+resource "aws_iam_policy" "argocd" {
+  count = var.create_role && var.attach_argocd_policy ? 1 : 0
+
+  name_prefix = "${var.policy_name_prefix}Argocd_Policy-"
+  path        = var.role_path
+  description = "Provides ArgoCD permissions to view and decrypt KMS keys"
+  policy      = data.aws_iam_policy_document.argocd[0].json
+  tags = var.tags
+}
+
+resource "aws_iam_role_policy_attachment" "argocd" {
+  count = var.create_role && var.attach_argocd_policy ? 1 : 0
+
+  role       = aws_iam_role.this[0].name
+  policy_arn = aws_iam_policy.argocd[0].arn
+}
