@@ -51,8 +51,8 @@ variable "oidc_providers" {
   type        = any
   default     = {
     one = {
-        provider_arn = ""
-        namespace_service_accounts = ["default:default"]
+      provider_arn               = ""
+      namespace_service_accounts = ["default:default"]
     }
   }
 }
@@ -84,6 +84,12 @@ variable "assume_role_condition_test" {
 ################################################################################
 # Policies
 ################################################################################
+variable "app_name" {
+  description = "App name (ie. Flux, Velero, etc.)"
+  type        = string
+  default     = ""
+}
+
 # Velero
 variable "attach_velero_policy" {
   description = "Determines whether to attach the Velero IAM policy to the role"
@@ -97,28 +103,28 @@ variable "velero_s3_bucket_arns" {
   default     = ["*"]
 }
 
-# Flux
-variable "attach_flux_policy" {
-  description = "Determines whether to attach the Flux IAM policy to the role"
+# SOPS
+variable "attach_sops_policy" {
+  description = "Determines whether to attach the SOPS policy to the role"
   type        = bool
   default     = false
 }
 
-# Gitlab Runner
-variable "attach_gitlab_runner_policy" {
-  description = "Determines whether to attach the Gitlab Runner IAM policy to the role"
+variable "sops_arn" {
+  description = "SOPS ARN to allow access to"
+  type        = string
+  default     = ""
+}
+
+# S3
+variable "attach_s3_policy" {
+  description = "Determines whether to attach the S3 to the role"
   type        = bool
   default     = false
 }
 
-variable "gitlab_runner_s3_bucket_arns" {
-  description = "List of S3 Bucket ARNs that Gitlab Runner needs for caching"
+variable "s3_bucket_arns" {
+  description = "List of S3 Bucket ARNs to allow access to"
   type        = list(string)
-  default     = ["*"]
-}
-# ArgoCD
-variable "attach_argocd_policy" {
-  description = "Determines whether to attach the ArgoCD IAM policy to the role"
-  type        = bool
-  default     = false
+  default     = [""]
 }
