@@ -8,74 +8,10 @@ locals {
 }
 
 ################################################################################
-# Velero Policy
+# SOPS Policy
 ################################################################################
-
-# https://github.com/vmware-tanzu/velero-plugin-for-aws#set-permissions-for-velero
-data "aws_iam_policy_document" "velero" {
-  count = var.create_role && var.attach_velero_policy ? 1 : 0
-
-  statement {
-    sid = "Ec2ReadWrite"
-    actions = [
-      "ec2:DescribeVolumes",
-      "ec2:DescribeSnapshots",
-      "ec2:CreateTags",
-      "ec2:CreateVolume",
-      "ec2:CreateSnapshot",
-      "ec2:DeleteSnapshot",
-    ]
-    resources = ["*"]
-  }
-
-  statement {
-    sid = "S3ReadWrite"
-    actions = [
-      "s3:GetObject",
-      "s3:DeleteObject",
-      "s3:PutObject",
-      "s3:AbortMultipartUpload",
-      "s3:ListMultipartUploadParts",
-    ]
-    resources = [for bucket in var.velero_s3_bucket_arns : "${bucket}/*"]
-  }
-
-  statement {
-    sid = "S3List"
-    actions = [
-      "s3:ListBucket",
-    ]
-    resources = var.velero_s3_bucket_arns
-  }
-}
-
-resource "aws_iam_policy" "velero" {
-  count = var.create_role && var.attach_velero_policy ? 1 : 0
-
-  name_prefix = "${var.policy_name_prefix}Velero_Policy-"
-  path        = var.role_path
-  description = "Provides Velero permissions to backup and restore cluster resources"
-  policy      = data.aws_iam_policy_document.velero[0].json
-
-  tags = var.tags
-}
-
-resource "aws_iam_role_policy_attachment" "velero" {
-  count = var.create_role && var.attach_velero_policy ? 1 : 0
-
-  role       = aws_iam_role.this[0].name
-  policy_arn = aws_iam_policy.velero[0].arn
-}
-
-################################################################################
-# Flux Policy
-################################################################################
-data "aws_kms_alias" "sops" {
-  name = "alias/batcave-landing-sops"
-}
-
-data "aws_iam_policy_document" "flux" {
-  count = var.create_role && var.attach_flux_policy ? 1 : 0
+data "aws_iam_policy_document" "sops" {
+  count = var.create_role && var.attach_sops_policy ? 1 : 0
 
   statement {
     sid = "kmslist"
@@ -87,40 +23,37 @@ data "aws_iam_policy_document" "flux" {
   }
 
   statement {
-    sid = "K8sNodes"
+    sid = "kmsdecrypt"
     actions = [
       "kms:Decrypt",
     ]
-    resources = [
-      data.aws_kms_alias.sops.arn,
-      data.aws_kms_alias.sops.target_key_arn,
-    ]
+    resources = [var.sops_arn]
   }
 }
 
-resource "aws_iam_policy" "flux" {
-  count = var.create_role && var.attach_flux_policy ? 1 : 0
+resource "aws_iam_policy" "sops" {
+  count = var.create_role && var.attach_sops_policy ? 1 : 0
 
-  name_prefix = "${var.policy_name_prefix}Flux_Policy-"
+  name_prefix = "${var.policy_name_prefix}${var.app_name}_Policy-"
   path        = var.role_path
-  description = "Provides Flux permissions to view and decrypt KMS keys"
-  policy      = data.aws_iam_policy_document.flux[0].json
+  description = "View and decrypt KMS keys"
+  policy      = data.aws_iam_policy_document.sops[0].json
 
   tags = var.tags
 }
 
-resource "aws_iam_role_policy_attachment" "flux" {
-  count = var.create_role && var.attach_flux_policy ? 1 : 0
+resource "aws_iam_role_policy_attachment" "sops" {
+  count = var.create_role && var.attach_sops_policy ? 1 : 0
 
   role       = aws_iam_role.this[0].name
-  policy_arn = aws_iam_policy.flux[0].arn
+  policy_arn = aws_iam_policy.sops[0].arn
 }
 
 ################################################################################
-# Gitlab Runner Policy
+# S3 Policy
 ################################################################################
-data "aws_iam_policy_document" "gitlab_runner" {
-  count = var.create_role && var.attach_gitlab_runner_policy ? 1 : 0
+data "aws_iam_policy_document" "s3" {
+  count = var.create_role && var.attach_s3_policy ? 1 : 0
 
   statement {
     sid = "S3ReadWrite"
@@ -131,7 +64,7 @@ data "aws_iam_policy_document" "gitlab_runner" {
       "s3:ListMultipartUploadParts",
       "s3:PutObject",
     ]
-    resources = [for bucket in var.gitlab_runner_s3_bucket_arns : "${bucket}/*"]
+    resources = [for bucket in var.s3_bucket_arns : "${bucket}/*"]
   }
 
   statement {
@@ -139,68 +72,24 @@ data "aws_iam_policy_document" "gitlab_runner" {
     actions = [
       "s3:ListBucket",
     ]
-    resources = var.gitlab_runner_s3_bucket_arns
+    resources = var.s3_bucket_arns
   }
 }
 
-resource "aws_iam_policy" "gitlab_runner" {
-  count = var.create_role && var.attach_gitlab_runner_policy ? 1 : 0
+resource "aws_iam_policy" "s3" {
+  count = var.create_role && var.attach_s3_policy ? 1 : 0
 
-  name_prefix = "${var.policy_name_prefix}Gitlab_Runner-"
+  name_prefix = "${var.policy_name_prefix}${var.app_name}-"
   path        = var.role_path
-  description = "Permissions for Gitlab Runner to store its cache in S3"
-  policy      = data.aws_iam_policy_document.gitlab_runner[0].json
+  description = "Interact with S3"
+  policy      = data.aws_iam_policy_document.s3[0].json
 
   tags = var.tags
 }
 
-resource "aws_iam_role_policy_attachment" "gitlab_runner" {
-  count = var.create_role && var.attach_gitlab_runner_policy ? 1 : 0
+resource "aws_iam_role_policy_attachment" "s3_policy" {
+  count = var.create_role && var.attach_s3_policy ? 1 : 0
 
   role       = aws_iam_role.this[0].name
-  policy_arn = aws_iam_policy.gitlab_runner[0].arn
-}
-
-################################################################################
-# ArgoCD Policy
-################################################################################
-data "aws_iam_policy_document" "argocd" {
-  count = var.create_role && var.attach_argocd_policy ? 1 : 0
-
-  statement {
-    sid = "kmslist"
-    actions = [
-      "kms:List*",
-      "kms:Describe*"
-    ]
-    resources = ["*"]
-  }
-
-  statement {
-    sid = "K8sNodes"
-    actions = [
-      "kms:Decrypt",
-    ]
-    resources = [
-      data.aws_kms_alias.sops.arn,
-      data.aws_kms_alias.sops.target_key_arn,
-    ]
-  }
-}
-
-resource "aws_iam_policy" "argocd" {
-  count = var.create_role && var.attach_argocd_policy ? 1 : 0
-
-  name_prefix = "${var.policy_name_prefix}Argocd_Policy-"
-  path        = var.role_path
-  description = "Provides ArgoCD permissions to view and decrypt KMS keys"
-  policy      = data.aws_iam_policy_document.argocd[0].json
-  tags = var.tags
-}
-
-resource "aws_iam_role_policy_attachment" "argocd" {
-  count = var.create_role && var.attach_argocd_policy ? 1 : 0
-
-  role       = aws_iam_role.this[0].name
-  policy_arn = aws_iam_policy.argocd[0].arn
+  policy_arn = aws_iam_policy.s3[0].arn
 }
