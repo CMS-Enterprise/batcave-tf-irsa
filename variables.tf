@@ -128,3 +128,16 @@ variable "s3_bucket_arns" {
   type        = list(string)
   default     = [""]
 }
+
+# DynamoDB
+variable "attach_dynamodb_policy" {
+  description = "Determines whether to attach the dynamodb policy to the role"
+  type        = bool
+  default     = false
+}
+
+variable "dynamodb_arn" {
+  description = "Dynamodb table to allow access to"
+  type        = string
+  default     = ""
+}

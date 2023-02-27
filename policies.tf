@@ -23,9 +23,10 @@ data "aws_iam_policy_document" "sops" {
   }
 
   statement {
-    sid = "kmsdecrypt"
+    sid = "kmsops"
     actions = [
       "kms:Decrypt",
+      "kms:Encrypt",
     ]
     resources = [var.sops_arn]
   }
@@ -92,4 +93,54 @@ resource "aws_iam_role_policy_attachment" "s3_policy" {
 
   role       = aws_iam_role.this[0].name
   policy_arn = aws_iam_policy.s3[0].arn
+}
+
+################################################################################
+# DynamoDB Policy
+################################################################################
+data "aws_iam_policy_document" "dynamodb" {
+  count = var.create_role && var.attach_dynamodb_policy ? 1 : 0
+
+  # permissions taken from: https://developer.hashicorp.com/vault/docs/configuration/storage/dynamodb
+  statement {
+    sid = "DynamoDBReadWrite"
+    actions = [
+      "dynamodb:DescribeLimits",
+      "dynamodb:DescribeTimeToLive",
+      "dynamodb:ListTagsOfResource",
+      "dynamodb:DescribeReservedCapacityOfferings",
+      "dynamodb:DescribeReservedCapacity",
+      "dynamodb:ListTables",
+      "dynamodb:BatchGetItem",
+      "dynamodb:BatchWriteItem",
+      "dynamodb:CreateTable",
+      "dynamodb:DeleteItem",
+      "dynamodb:GetItem",
+      "dynamodb:GetRecords",
+      "dynamodb:PutItem",
+      "dynamodb:Query",
+      "dynamodb:UpdateItem",
+      "dynamodb:Scan",
+      "dynamodb:DescribeTable"
+    ]
+    resources = [var.dynamodb_arn]
+  }
+}
+
+resource "aws_iam_policy" "dynamodb" {
+  count = var.create_role && var.attach_dynamodb_policy ? 1 : 0
+
+  name_prefix = "${var.policy_name_prefix}${var.app_name}-"
+  path        = var.role_path
+  description = "Interact with DynamoDB"
+  policy      = data.aws_iam_policy_document.dynamodb[0].json
+
+  tags = var.tags
+}
+
+resource "aws_iam_role_policy_attachment" "dynamodb" {
+  count = var.create_role && var.attach_dynamodb_policy ? 1 : 0
+
+  role       = aws_iam_role.this[0].name
+  policy_arn = aws_iam_policy.dynamodb[0].arn
 }
