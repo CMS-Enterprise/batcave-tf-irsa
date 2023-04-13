@@ -154,7 +154,7 @@ variable "secret_arns" {
   type        = list(string)
   default     = []
   validation {
-    condition = !anytrue([for arn in var.secret_arns : (length(regexall("\\*", arn)) == 0 ? false : true)] )
-    error_message = "No wildcards allowed in secret_arns variable"
+    condition = !anytrue([for arn in var.secret_arns : (length(regexall("\\*|\\?", arn)) == 0 ? false : true)] )
+    error_message = "No '*' or '?' allowed in secret_arns variable"
   }
 }
