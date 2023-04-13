@@ -144,3 +144,37 @@ resource "aws_iam_role_policy_attachment" "dynamodb" {
   role       = aws_iam_role.this[0].name
   policy_arn = aws_iam_policy.dynamodb[0].arn
 }
+
+################################################################################
+# AWS Secrets Manager Policy
+################################################################################
+data "aws_iam_policy_document" "secrets-manager" {
+  count = var.create_role &&  var.attach_secretsmanager_policy ? 1 : 0
+
+  statement {
+    sid = "SecretsManagerRead"
+    actions = [
+      "secretsmanager:GetSecretValue",
+      "secretsmanager:DescribeSecret"
+    ]
+    resources = var.secret_arns
+  }
+}
+
+resource "aws_iam_policy" "secrets-manager" {
+  count = var.create_role && var.attach_secretsmanager_policy ? 1 : 0
+
+  name_prefix = "${var.policy_name_prefix}${var.app_name}-"
+  path        = var.role_path
+  description = "Interact with Secrets Manager"
+  policy      = data.aws_iam_policy_document.secrets-manager[0].json
+
+  tags = var.tags
+}
+
+resource "aws_iam_role_policy_attachment" "secrets-manager" {
+  count = var.create_role && var.attach_secretsmanager_policy ? 1 : 0
+
+  role       = aws_iam_role.this[0].name
+  policy_arn = aws_iam_policy.secrets-manager[0].arn
+}
