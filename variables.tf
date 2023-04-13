@@ -153,4 +153,8 @@ variable "secret_arns" {
   description = "ARNs of secrets in secrets manager to add to policy"
   type        = list(string)
   default     = []
+  validation {
+    condition = !anytrue([for arn in var.secret_arns : (length(regexall("\\*", arn)) == 0 ? false : true)] )
+    error_message = "No wildcards allowed in secret_arns variable"
+  }
 }
