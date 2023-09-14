@@ -49,7 +49,7 @@ variable "role_policy_arns" {
 variable "oidc_providers" {
   description = "Map of OIDC providers where each provider map should contain the `provider`, `provider_arn`, and `namespace_service_accounts`"
   type        = any
-  default     = {
+  default = {
     one = {
       provider_arn               = ""
       namespace_service_accounts = ["default:default"]
@@ -157,4 +157,9 @@ variable "secret_arns" {
     condition = !anytrue([for arn in var.secret_arns : (length(regexall("\\*|\\?", arn)) == 0 ? false : true)] )
     error_message = "No '*' or '?' allowed in secret_arns variable"
   }
+}
+variable "attach_insights_policy" {
+  description = "Determines whether to attach the CloudWatch Insights policy to the role"
+  type        = bool
+  default     = false
 }
