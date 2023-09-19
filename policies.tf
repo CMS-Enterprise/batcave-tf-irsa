@@ -96,7 +96,6 @@ resource "aws_iam_role_policy_attachment" "s3_policy" {
 }
 
 ################################################################################
-<<<<<<< HEAD
 # DynamoDB Policy
 ################################################################################
 data "aws_iam_policy_document" "dynamodb" {
@@ -179,7 +178,6 @@ resource "aws_iam_role_policy_attachment" "secrets-manager" {
   role       = aws_iam_role.this[0].name
   policy_arn = aws_iam_policy.secrets-manager[0].arn
 }
-=======
 # CloudWatch Policy for container insights
 ################################################################################
 resource "aws_iam_role_policy_attachment" "insights_policy" {
@@ -187,4 +185,3 @@ resource "aws_iam_role_policy_attachment" "insights_policy" {
   role       = aws_iam_role.this[0].name
   policy_arn = "arn:${local.partition}:iam::aws:policy/CloudWatchAgentServerPolicy"
 }
->>>>>>> 7570796 (added code to support cloudwatch role for container insights)
