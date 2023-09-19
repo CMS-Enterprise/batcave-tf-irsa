@@ -149,7 +149,7 @@ resource "aws_iam_role_policy_attachment" "dynamodb" {
 # AWS Secrets Manager Policy
 ################################################################################
 data "aws_iam_policy_document" "secrets-manager" {
-  count = var.create_role &&  var.attach_secretsmanager_policy ? 1 : 0
+  count = var.create_role && var.attach_secretsmanager_policy ? 1 : 0
 
   statement {
     sid = "SecretsManagerRead"
