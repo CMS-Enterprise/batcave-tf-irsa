@@ -149,7 +149,7 @@ resource "aws_iam_role_policy_attachment" "dynamodb" {
 # AWS Secrets Manager Policy
 ################################################################################
 data "aws_iam_policy_document" "secrets-manager" {
-  count = var.create_role &&  var.attach_secretsmanager_policy ? 1 : 0
+  count = var.create_role && var.attach_secretsmanager_policy ? 1 : 0
 
   statement {
     sid = "SecretsManagerRead"
@@ -177,4 +177,11 @@ resource "aws_iam_role_policy_attachment" "secrets-manager" {
 
   role       = aws_iam_role.this[0].name
   policy_arn = aws_iam_policy.secrets-manager[0].arn
+}
+# CloudWatch Policy for container insights
+################################################################################
+resource "aws_iam_role_policy_attachment" "insights_policy" {
+  count      = var.create_role && var.attach_insights_policy ? 1 : 0
+  role       = aws_iam_role.this[0].name
+  policy_arn = "arn:${local.partition}:iam::aws:policy/CloudWatchAgentServerPolicy"
 }
