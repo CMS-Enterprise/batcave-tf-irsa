@@ -178,10 +178,50 @@ resource "aws_iam_role_policy_attachment" "secrets-manager" {
   role       = aws_iam_role.this[0].name
   policy_arn = aws_iam_policy.secrets-manager[0].arn
 }
+
+################################################################################
 # CloudWatch Policy for container insights
 ################################################################################
 resource "aws_iam_role_policy_attachment" "insights_policy" {
   count      = var.create_role && var.attach_insights_policy ? 1 : 0
   role       = aws_iam_role.this[0].name
   policy_arn = "arn:${local.partition}:iam::aws:policy/CloudWatchAgentServerPolicy"
+}
+
+################################################################################
+# SQS Policy
+################################################################################
+locals {
+  sqs_read_write_permissions = [
+    "sqs:GetQueueUrl",
+    "sqs:DeleteMessage",
+    "sqs:ReceiveMessage",
+    "sqs:SendMessage",
+    "sqs:GetQueueAttributes"
+  ]
+}
+data "aws_iam_policy_document" "sqs_read_write" {
+  count = var.create_role && length(var.sqs_read_write_arns) > 0 ? 1 : 0
+
+  statement {
+    sid       = "SQSReadWrite"
+    actions   = local.sqs_read_write_permissions
+    resources = var.sqs_read_write_arns
+  }
+}
+resource "aws_iam_policy" "sqs_read_write" {
+  count = var.create_role && length(var.sqs_read_write_arns) > 0 ? 1 : 0
+
+  name_prefix = "${var.policy_name_prefix}${var.app_name}-"
+  path        = var.role_path
+  description = "SQS Read/Write"
+  policy      = data.aws_iam_policy_document.sqs_read_write[0].json
+
+  tags = var.tags
+}
+resource "aws_iam_role_policy_attachment" "sqs_read_write" {
+  count = var.create_role && length(var.sqs_read_write_arns) > 0 ? 1 : 0
+
+  role       = aws_iam_role.this[0].name
+  policy_arn = aws_iam_policy.sqs_read_write[0].arn
 }

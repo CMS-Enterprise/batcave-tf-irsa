@@ -163,3 +163,8 @@ variable "attach_insights_policy" {
   type        = bool
   default     = false
 }
+variable "sqs_read_write_arns" {
+  description = "List of SQS ARNs to allow read/write access to"
+  type        = list(string)
+  default     = []
+}
