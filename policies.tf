@@ -180,6 +180,56 @@ resource "aws_iam_role_policy_attachment" "secrets-manager" {
 }
 
 ################################################################################
+# CloudWatch Policy for EC2 metrics
+################################################################################
+data "aws_iam_policy_document" "ec2_metrics" {
+  count = var.create_role && var.attach_ec2_metrics_policy ? 1 : 0
+
+  statement {
+    sid = "AllowReadingMetricsFromCloudWatch"
+    actions = [
+      "cloudwatch:DescribeAlarmsForMetric",
+      "cloudwatch:DescribeAlarmHistory",
+      "cloudwatch:DescribeAlarms",
+      "cloudwatch:ListMetrics",
+      "cloudwatch:GetMetricData",
+      "cloudwatch:GetInsightRuleReport"
+    ]
+    resources = ["*"]
+  }
+
+  statement {
+    sid = "AllowReadingTagsInstancesRegionsFromEC2"
+    actions = ["ec2:DescribeTags", "ec2:DescribeInstances", "ec2:DescribeRegions"]
+    resources = ["*"]
+  }
+
+  statement {
+    sid = "AllowReadingResourcesForTags"
+    actions = "tag:GetResources"
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_policy" "ec2_metrics" {
+  count = var.create_role && var.attach_ec2_metrics_policy ? 1 : 0
+
+  name_prefix = "${var.policy_name_prefix}${var.app_name}_Policy-"
+  path        = var.role_path
+  description = "View EC2 metrics"
+  policy      = data.aws_iam_policy_document.ec2_metrics[0].json
+
+  tags = var.tags
+}
+
+resource "aws_iam_role_policy_attachment" "ec2_metrics" {
+  count = var.create_role && var.attach_ec2_metrics_policy ? 1 : 0
+
+  role       = aws_iam_role.this[0].name
+  policy_arn = aws_iam_policy.ec2_metrics[0].arn
+}
+
+################################################################################
 # CloudWatch Policy for container insights
 ################################################################################
 resource "aws_iam_role_policy_attachment" "insights_policy" {

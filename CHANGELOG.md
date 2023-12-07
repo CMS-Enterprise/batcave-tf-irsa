@@ -8,3 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 * Striking 1.0.0 release
 * Adding sqs flag
+
+# 1.0.1
+
+* Adding Cloudwatch metrics policy for ec2
