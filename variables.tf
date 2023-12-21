@@ -28,12 +28,6 @@ variable "role_description" {
   default     = null
 }
 
-variable "role_name_prefix" {
-  description = "IAM role name prefix"
-  type        = string
-  default     = null
-}
-
 variable "policy_name_prefix" {
   description = "IAM policy name prefix"
   type        = string
@@ -88,19 +82,6 @@ variable "app_name" {
   description = "App name (ie. Flux, Velero, etc.)"
   type        = string
   default     = ""
-}
-
-# Velero
-variable "attach_velero_policy" {
-  description = "Determines whether to attach the Velero IAM policy to the role"
-  type        = bool
-  default     = false
-}
-
-variable "velero_s3_bucket_arns" {
-  description = "List of S3 Bucket ARNs that Velero needs access to in order to backup and restore cluster resources"
-  type        = list(string)
-  default     = ["*"]
 }
 
 # SOPS
