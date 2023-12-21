@@ -6,8 +6,6 @@ on:
 jobs:
   pre_commit:
     name: Run pre-commit and commit any autocorrections
-    # Depends on tf_docs to avoid conflicts when changes are being written by both tf_docs and pre-commit
-    needs: tf_docs
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
