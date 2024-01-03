@@ -149,3 +149,10 @@ variable "sqs_read_write_arns" {
   type        = list(string)
   default     = []
 }
+
+# Cloudwatch
+variable "attach_ec2_metrics_policy" {
+  description = "Determines whether to attach the Cloudwatch policy for ec2 metrics to the role"
+  type = bool
+  default = true
+}
