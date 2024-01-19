@@ -149,3 +149,24 @@ variable "sqs_read_write_arns" {
   type        = list(string)
   default     = []
 }
+
+# Cloudwatch
+variable "attach_cloudwatch_policy" {
+  description = "Determines whether to attach the cloudwatch permissions to the role"
+  type        = bool
+  default     = false
+}
+
+# EC2
+variable "attach_ec2_policy" {
+  description = "Determines whether to attach the ec2 permissions to the role"
+  type        = bool
+  default     = false
+}
+
+# Tags
+variable "attach_tags_policy" {
+  description = "Determines whether to attach the tags permissions to the role"
+  type        = bool
+  default     = false
+}
