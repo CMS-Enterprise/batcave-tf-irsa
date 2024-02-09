@@ -186,6 +186,118 @@ resource "aws_iam_role_policy_attachment" "insights_policy" {
 }
 
 ################################################################################
+# CloudWatch Policy for Grafana
+################################################################################
+data "aws_iam_policy_document" "cloudwatch" {
+  count = var.create_role && var.attach_cloudwatch_policy ? 1 : 0
+
+  statement {
+    sid = "AllowReadingMetricsAndLogsFromCloudWatch"
+    actions = [
+      "cloudwatch:DescribeAlarmsForMetric",
+      "cloudwatch:DescribeAlarmHistory",
+      "cloudwatch:DescribeAlarms",
+      "cloudwatch:ListMetrics",
+      "cloudwatch:GetMetricData",
+      "cloudwatch:GetInsightRuleReport",
+      "logs:DescribeLogGroups",
+      "logs:GetLogGroupFields",
+      "logs:StartQuery",
+      "logs:StopQuery",
+      "logs:GetQueryResults",
+      "logs:GetLogEvents"
+    ]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_policy" "cloudwatch" {
+  count = var.create_role && var.attach_cloudwatch_policy ? 1 : 0
+
+  name_prefix = "${var.policy_name_prefix}${var.app_name}-"
+  path        = var.role_path
+  description = "Interact with CloudWatch"
+  policy      = data.aws_iam_policy_document.cloudwatch[0].json
+
+  tags = var.tags
+}
+
+resource "aws_iam_role_policy_attachment" "cloudwatch" {
+  count = var.create_role && var.attach_cloudwatch_policy ? 1 : 0
+
+  role       = aws_iam_role.this[0].name
+  policy_arn = aws_iam_policy.cloudwatch[0].arn
+}
+
+################################################################################
+# EC2 Policy for Grafana
+################################################################################
+data "aws_iam_policy_document" "ec2" {
+  count = var.create_role && var.attach_ec2_policy ? 1 : 0
+
+  statement {
+    sid = "AllowReadingTagsInstancesRegionsFromEC2"
+    actions = [
+      "ec2:DescribeTags",
+      "ec2:DescribeInstances",
+      "ec2:DescribeRegions"
+    ]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_policy" "ec2" {
+  count = var.create_role && var.attach_ec2_policy ? 1 : 0
+
+  name_prefix = "${var.policy_name_prefix}${var.app_name}-"
+  path        = var.role_path
+  description = "Interact with EC2"
+  policy      = data.aws_iam_policy_document.ec2[0].json
+
+  tags = var.tags
+}
+
+resource "aws_iam_role_policy_attachment" "ec2" {
+  count = var.create_role && var.attach_ec2_policy ? 1 : 0
+
+  role       = aws_iam_role.this[0].name
+  policy_arn = aws_iam_policy.ec2[0].arn
+}
+
+################################################################################
+# Tags Policy for Grafana
+################################################################################
+data "aws_iam_policy_document" "tags" {
+  count = var.create_role && var.attach_tags_policy ? 1 : 0
+
+  statement {
+    sid = "AllowReadingResourcesForTags"
+    actions = [
+      "tag:GetResources"
+    ]
+    resources = ["*"]
+  }
+}
+
+resource "aws_iam_policy" "tags" {
+  count = var.create_role && var.attach_tags_policy ? 1 : 0
+
+  name_prefix = "${var.policy_name_prefix}${var.app_name}-"
+  path        = var.role_path
+  description = "Interact with tags"
+  policy      = data.aws_iam_policy_document.tags[0].json
+
+  tags = var.tags
+}
+
+resource "aws_iam_role_policy_attachment" "tags" {
+  count = var.create_role && var.attach_tags_policy ? 1 : 0
+
+  role       = aws_iam_role.this[0].name
+  policy_arn = aws_iam_policy.tags[0].arn
+}
+
+################################################################################
 # SQS Policy
 ################################################################################
 locals {
