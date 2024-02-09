@@ -194,19 +194,19 @@ data "aws_iam_policy_document" "cloudwatch" {
   statement {
     sid = "AllowReadingMetricsAndLogsFromCloudWatch"
     actions = [
-        "cloudwatch:DescribeAlarmsForMetric",
-        "cloudwatch:DescribeAlarmHistory",
-        "cloudwatch:DescribeAlarms",
-        "cloudwatch:ListMetrics",
-        "cloudwatch:GetMetricData",
-        "cloudwatch:GetInsightRuleReport",
-        "logs:DescribeLogGroups",
-        "logs:GetLogGroupFields",
-        "logs:StartQuery",
-        "logs:StopQuery",
-        "logs:GetQueryResults",
-        "logs:GetLogEvents"
-      ]
+      "cloudwatch:DescribeAlarmsForMetric",
+      "cloudwatch:DescribeAlarmHistory",
+      "cloudwatch:DescribeAlarms",
+      "cloudwatch:ListMetrics",
+      "cloudwatch:GetMetricData",
+      "cloudwatch:GetInsightRuleReport",
+      "logs:DescribeLogGroups",
+      "logs:GetLogGroupFields",
+      "logs:StartQuery",
+      "logs:StopQuery",
+      "logs:GetQueryResults",
+      "logs:GetLogEvents"
+    ]
     resources = ["*"]
   }
 }
@@ -238,10 +238,10 @@ data "aws_iam_policy_document" "ec2" {
   statement {
     sid = "AllowReadingTagsInstancesRegionsFromEC2"
     actions = [
-        "ec2:DescribeTags", 
-        "ec2:DescribeInstances", 
-        "ec2:DescribeRegions"
-      ]
+      "ec2:DescribeTags",
+      "ec2:DescribeInstances",
+      "ec2:DescribeRegions"
+    ]
     resources = ["*"]
   }
 }
@@ -273,8 +273,8 @@ data "aws_iam_policy_document" "tags" {
   statement {
     sid = "AllowReadingResourcesForTags"
     actions = [
-        "tag:GetResources"
-      ]
+      "tag:GetResources"
+    ]
     resources = ["*"]
   }
 }
