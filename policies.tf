@@ -154,13 +154,8 @@ data "aws_iam_policy_document" "secrets-manager" {
       "secretsmanager:GetSecretValue",
       "secretsmanager:DescribeSecret"
     ]
-    resources = data.aws_secretsmanager_secret.private-registry[0].arn
+    resources = var.secret_arns
   }
-}
-
-data "aws_secretsmanager_secret" "private-registry" {
-  count = var.create_role && var.attach_secretsmanager_policy ? 1 : 0
-  name = "private-registry"
 }
 
 resource "aws_iam_policy" "secrets-manager" {
