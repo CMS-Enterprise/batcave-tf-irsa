@@ -142,11 +142,15 @@ resource "aws_iam_role_policy_attachment" "dynamodb" {
   policy_arn = aws_iam_policy.dynamodb[0].arn
 }
 
+locals {
+  create_secrets_manager_policy = var.create_role && var.attach_secretsmanager_policy && length(var.asm_secret_arns) > 0
+}
+
 ################################################################################
 # AWS Secrets Manager Policy
 ################################################################################
 data "aws_iam_policy_document" "secrets-manager" {
-  count = var.create_role && var.attach_secretsmanager_policy ? 1 : 0
+  count = local.create_secrets_manager_policy ? 1 : 0
 
   statement {
     sid = "SecretsManagerRead"
@@ -154,18 +158,12 @@ data "aws_iam_policy_document" "secrets-manager" {
       "secretsmanager:GetSecretValue",
       "secretsmanager:DescribeSecret"
     ]
-    resources = data.aws_secretsmanager_secret.private-registry[0].arn
+    resources = var.asm_secret_arns
   }
 }
 
-data "aws_secretsmanager_secret" "private-registry" {
-  count = var.create_role && var.attach_secretsmanager_policy ? 1 : 0
-  name = "private-registry"
-}
-
-
 resource "aws_iam_policy" "secrets-manager" {
-  count = var.create_role && var.attach_secretsmanager_policy ? 1 : 0
+  count = local.create_secrets_manager_policy ? 1 : 0
 
   name_prefix = "${var.policy_name_prefix}${var.app_name}-"
   path        = var.role_path
@@ -176,7 +174,7 @@ resource "aws_iam_policy" "secrets-manager" {
 }
 
 resource "aws_iam_role_policy_attachment" "secrets-manager" {
-  count = var.create_role && var.attach_secretsmanager_policy ? 1 : 0
+  count = local.create_secrets_manager_policy ? 1 : 0
 
   role       = aws_iam_role.this[0].name
   policy_arn = aws_iam_policy.secrets-manager[0].arn
