@@ -57,6 +57,7 @@ No modules.
 | Name | Description | Type | Default | Required |
 |------|-------------|------|---------|:--------:|
 | <a name="input_app_name"></a> [app\_name](#input\_app\_name) | App name (ie. Flux, Velero, etc.) | `string` | `""` | no |
+| <a name="input_asm_secret_arns"></a> [asm\_secret\_arns](#input\_asm\_secret\_arns) | ARNs of secrets in AWS secrets manager (ASM) to add to policy | `list(string)` | `[]` | no |
 | <a name="input_assume_role_condition_test"></a> [assume\_role\_condition\_test](#input\_assume\_role\_condition\_test) | Name of the [IAM condition operator](https://docs.aws.amazon.com/IAM/latest/UserGuide/reference_policies_elements_condition_operators.html) to evaluate when assuming the role | `string` | `"StringEquals"` | no |
 | <a name="input_attach_cloudwatch_policy"></a> [attach\_cloudwatch\_policy](#input\_attach\_cloudwatch\_policy) | Determines whether to attach the cloudwatch permissions to the role | `bool` | `false` | no |
 | <a name="input_attach_dynamodb_policy"></a> [attach\_dynamodb\_policy](#input\_attach\_dynamodb\_policy) | Determines whether to attach the dynamodb policy to the role | `bool` | `false` | no |
@@ -78,7 +79,6 @@ No modules.
 | <a name="input_role_permissions_boundary_arn"></a> [role\_permissions\_boundary\_arn](#input\_role\_permissions\_boundary\_arn) | Permissions boundary ARN to use for IAM role | `string` | `"arn:aws:iam::373346310182:policy/cms-cloud-admin/developer-boundary-policy"` | no |
 | <a name="input_role_policy_arns"></a> [role\_policy\_arns](#input\_role\_policy\_arns) | ARNs of any policies to attach to the IAM role | `map(string)` | `{}` | no |
 | <a name="input_s3_bucket_arns"></a> [s3\_bucket\_arns](#input\_s3\_bucket\_arns) | List of S3 Bucket ARNs to allow access to | `list(string)` | <pre>[<br>  ""<br>]</pre> | no |
-| <a name="input_secret_arns"></a> [secret\_arns](#input\_secret\_arns) | ARNs of secrets in secrets manager to add to policy | `list(string)` | `[]` | no |
 | <a name="input_sops_arn"></a> [sops\_arn](#input\_sops\_arn) | SOPS ARN to allow access to | `string` | `""` | no |
 | <a name="input_sqs_read_write_arns"></a> [sqs\_read\_write\_arns](#input\_sqs\_read\_write\_arns) | List of SQS ARNs to allow read/write access to | `list(string)` | `[]` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | A map of tags to add the the IAM role | `map(any)` | `{}` | no |
