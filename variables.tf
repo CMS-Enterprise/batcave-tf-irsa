@@ -130,15 +130,16 @@ variable "attach_secretsmanager_policy" {
   default     = false
 }
 
-variable "secret_arns" {
-  description = "ARNs of secrets in secrets manager to add to policy"
+variable "asm_secret_arns" {
+  description = "ARNs of secrets in AWS secrets manager (ASM) to add to policy"
   type        = list(string)
   default     = []
   validation {
-    condition     = !anytrue([for arn in var.secret_arns : (length(regexall("\\*|\\?", arn)) == 0 ? false : true)])
+    condition     = !anytrue([for arn in var.asm_secret_arns : (length(regexall("\\*|\\?", arn)) == 0 ? false : true)])
     error_message = "No '*' or '?' allowed in secret_arns variable"
   }
 }
+
 variable "attach_insights_policy" {
   description = "Determines whether to attach the CloudWatch Insights policy to the role"
   type        = bool
