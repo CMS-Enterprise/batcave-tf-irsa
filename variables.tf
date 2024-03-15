@@ -134,10 +134,6 @@ variable "asm_secret_arns" {
   description = "ARNs of secrets in AWS secrets manager (ASM) to add to policy"
   type        = list(string)
   default     = []
-  validation {
-    condition     = !anytrue([for arn in var.asm_secret_arns : (length(regexall("\\*|\\?", arn)) == 0 ? false : true)])
-    error_message = "No '*' or '?' allowed in secret_arns variable"
-  }
 }
 
 variable "attach_insights_policy" {
