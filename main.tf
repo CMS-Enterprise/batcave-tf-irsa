@@ -19,13 +19,11 @@ data "aws_iam_policy_document" "this" {
         values   = [for sa in statement.value.namespace_service_accounts : "system:serviceaccount:${sa}"]
       }
 
-      # https://aws.amazon.com/premiumsupport/knowledge-center/eks-troubleshoot-oidc-and-irsa/?nc1=h_ls
       condition {
         test     = var.assume_role_condition_test
         variable = "${replace(statement.value.provider_arn, "/^(.*provider/)/", "")}:aud"
         values   = ["sts.amazonaws.com"]
       }
-
     }
   }
 }
@@ -51,3 +49,34 @@ resource "aws_iam_role_policy_attachment" "this" {
   role       = aws_iam_role.this[0].name
   policy_arn = each.value
 }
+
+resource "aws_iam_policy" "namespace_secrets_policy" {
+  for_each = var.namespace_secrets
+
+  name        = "${each.key}-secrets-manager-policy"
+  description = "Policy for accessing secrets in namespace ${each.key}"
+  path        = var.role_path
+  policy      = jsonencode({
+    Version = "2012-10-17",
+    Statement = [
+      {
+        Action = [
+          "secretsmanager:GetSecretValue",
+          "secretsmanager:DescribeSecret"
+        ],
+        Effect   = "Allow",
+        Resource = each.value
+      }
+    ]
+  })
+
+  tags = var.tags
+}
+
+resource "aws_iam_role_policy_attachment" "namespace_secrets_attachment" {
+  for_each = var.namespace_secrets
+
+  policy_arn = aws_iam_policy.namespace_secrets_policy[each.key].arn
+  role       = aws_iam_role.this[0].name
+}
+
